@@ -1,3 +1,10 @@
+/**
+ * Author:    Wojciech Domski
+ * Web:       domski.pl
+ * Blog:      blog.domski.pl
+ * Contact:   Wojciech.Domski@gmail.com
+ */
+
 #include "circ_buff.h"
 #include "circ_buff_hw.h"
 

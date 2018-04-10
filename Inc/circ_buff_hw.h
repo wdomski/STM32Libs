@@ -1,3 +1,10 @@
+/**
+ * Author:    Wojciech Domski
+ * Web:       domski.pl
+ * Blog:      blog.domski.pl
+ * Contact:   Wojciech.Domski@gmail.com
+ */
+
 #ifndef CIRC_BUFF_HW_HEADER
 #define CIRC_BUFF_HW_HEADER
 
