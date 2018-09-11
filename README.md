@@ -38,3 +38,51 @@ if (circ_buff_new_data(&cb)) {
 	}
 }
 ```
+
+## PID -- proportional integral derivative controller
+
+Library facilitating implementation of PID controller.
+It comes with two flavours: float and int32.
+
+### Example
+
+Create data structures and initialize them:
+```C
+pid_f32_t pid_data;
+float P, I, D, DT_S;
+float u, mv, dv;
+
+P = 1.0000f;
+I = 0.0000f;
+D = 0.1234f;
+DT_S = 0.010f; //freq = 100Hz, period = 10 ms
+```
+
+Initialize PID data structure and set limits:
+```C
+pid_f32_init(&pid_data, P, I, D, DT_S);
+pid_data.p_max = 3000;
+pid_data.p_min = -3000;
+pid_data.i_max = 3000;
+pid_data.i_min = -3000;
+pid_data.d_max = 3000;
+pid_data.d_min = -3000;
+pid_data.total_max = 3000;
+pid_data.total_min = -3000;
+```
+
+To reset integral term (sets integral sum to 0).
+It only make sense when you use integral term; 
+I coefficient is different from 0.
+```C
+pid_f32_reset_int(&pid_data);
+```
+
+Calculate control signal with PID controller:
+```C
+mv = 10.0f;
+dv = -5.0f;
+u = pid_f32_calc(&pid_dat, mv, dv);
+```
+
+
