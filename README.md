@@ -86,3 +86,28 @@ u = pid_f32_calc(&pid_dat, mv, dv);
 ```
 
 
+## eprintfs
+Library offering an implementation of embedded printf(), sprintf(), etc. 
+functions.
+Not all functions from stdio.h are implemented and they do not 
+offer complete list of features.
+
+Each function from stdio.h has its counter part in eprintfs library. 
+Embedded implementation has an **e** prefix. 
+
+Available functions are:
+- int eabs(int val);
+- float efabs(float val);
+- unsigned int epower(unsigned int base, unsigned int power);
+- unsigned int edigits(int number);
+- int estrlen(const char *str);
+- int estrncpy(const char *str, char *out, unsigned int len);
+- int estrncmp(const char *str1, const char *str2, unsigned int num);
+- char *eitoa(long int val, char *str, int base);
+- int eatoi(char *str, int base, char **stop);
+- float eatof(char *str, char **stop);
+- int esprintf(char *str, const char *format, ...);
+- int esscanf(char *str, const char *format, ...);
+- const char *estrchr(const char *str, int character);
+- char * estrstr (char * str1, const char * str2);
+- char *efind_char_right(char *str, int len, const char sign, int * position);
