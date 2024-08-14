@@ -111,3 +111,14 @@ Available functions are:
 - const char *estrchr(const char *str, int character);
 - char * estrstr (char * str1, const char * str2);
 - char *efind_char_right(char *str, int len, const char sign, int * position);
+
+## GPS
+Library supporting parsing of NMEA sentences. Currently only two are supported:
+- GPGGA,
+- GPVTG.
+
+Use **gps_parse()** to parse buffer with NMEA sentences and populate **gps_t** structure.
+
+```
+int gps_parse(gps_t * gps, char * buffer, unsigned int length);
+```
