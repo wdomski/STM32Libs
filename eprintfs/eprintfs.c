@@ -362,19 +362,33 @@ int esprintf(char *input_str, const char *format, ...)
 				}
 			}
 
-			// TODO: process length
+			// TODO: process length, to check !!!
+			char len_type = 0;
 			if (format[i] == 'l' || format[i] == 'h')
 			{
 				++i;
+				len_type = 1;
 				if (format[i] == 'l' || format[i] == 'h')
 				{
 					++i;
+					len_type = 2;
 				}
 			}
 
 			if (format[i] == 'd' || format[i] == 'i')
 			{
-				int val = va_arg(vl, int);
+				long int val; // for lld still long int instead of long long int
+				if(len_type == 0)
+				{
+					val = va_arg(vl, int);
+				}
+				else if(len_type == 1)
+				{
+					val = va_arg(vl, long int);
+				}
+				else{
+					val = va_arg(vl, long long int);
+				}
 				if (pad_with_zeros == 0)
 				{
 					eitoa(val, str, 10);
