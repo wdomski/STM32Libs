@@ -1,10 +1,3 @@
-/**
- * Author:    Wojciech Domski
- * Web:       domski.pl
- * Blog:      blog.domski.pl
- * Contact:   Wojciech.Domski@gmail.com
- */
-
 #ifndef CIRC_BUFF_HEADER
 #define CIRC_BUFF_HEADER
 
@@ -59,7 +52,7 @@ int circ_buff_init(circ_buff_t * circ_buff, circ_buff_hw_t * hw, void * buffer,
  *
  * \return	Position
  */
-int circ_buff_get_current_position(circ_buff_t * circ_buff);
+unsigned int circ_buff_get_current_position(circ_buff_t * circ_buff);
 
 /**
  * Checks if there is new data.
@@ -82,7 +75,7 @@ int circ_buff_new_data(circ_buff_t * circ_buff);
  * 			>0				Returned data indicates the number
  * 							of bytes to be read.
  */
-int circ_buff_new_data_amount(circ_buff_t * circ_buff);
+unsigned int circ_buff_new_data_amount(circ_buff_t * circ_buff);
 
 /**
  *
@@ -143,7 +136,18 @@ int circ_buff_write(circ_buff_t * circ_buff, uint8_t * in, uint32_t len);
 int circ_buff_start_rx(circ_buff_t * cb);
 
 /**
+ * Stop receiving in DMA mode.
+ *
+ * \param	cb		Pointer to circular buffer structure
+ *
+ * \return	0		Success
+ * \return	!0		Something went wrong.
+ */
+int circ_buff_stop_rx(circ_buff_t * cb);
+
+/**
  * Start transmitting in DMA mode.
+ * Transmit whole buffer via DMA.
  *
  * \param	cb		Pointer to circular buffer structure
  *
@@ -151,6 +155,28 @@ int circ_buff_start_rx(circ_buff_t * cb);
  * \return	!0		Something went wrong.
  */
 int circ_buff_start_tx(circ_buff_t * cb);
+
+/**
+ * Stop transmitting in DMA mode.
+ *
+ * \param	cb		Pointer to circular buffer structure
+ *
+ * \return	0		Success
+ * \return	!0		Something went wrong.
+ */
+int circ_buff_stop_tx(circ_buff_t * cb);
+
+/**
+ * Start transmitting in DMA mode.
+ * Transmit a part of buffer via DMA.
+ *
+ * \param	cb		Pointer to circular buffer structure
+ * \param	size	Buffer size
+ *
+ * \return	0		Success
+ * \return	!0		Something went wrong.
+ */
+int circ_buff_start_tx_len(circ_buff_t * cb, uint32_t size);
 
 /**
  * Start transmitting of external buffer in DMA mode.
@@ -163,5 +189,7 @@ int circ_buff_start_tx(circ_buff_t * cb);
  * \return	!0		Something went wrong.
  */
 int circ_buff_start_tx_buff(circ_buff_t * cb, uint8_t * buff, uint32_t size);
+
+int circ_buff_tx_busy(circ_buff_t * cb);
 
 #endif
