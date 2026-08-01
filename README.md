@@ -122,3 +122,45 @@ Use **gps_parse()** to parse buffer with NMEA sentences and populate **gps_t** s
 ```
 int gps_parse(gps_t * gps, char * buffer, unsigned int length);
 ```
+
+## ealgebra
+
+Algebra library mostly generated with AI agent. It contains functions for matrix and vector operations, as well as some basic linear algebra routines. It is a single source file implementation of most useful linear algebra functions including:
+- constant definitions,
+- vector operations,
+- matrix operations,
+- scalar math functions,
+- trigonometric functions,
+- quaternion and rotation matrix conversions.
+
+A separate [README.md](ealgebra/README.md) file is available in the ealgebra folder with more details and examples.
+
+Additionally, a short description of all functions is available in [docs.md](ealgebra/docs.md) file.
+
+### Example
+
+```c
+// vector operations
+float a[]  = {1, 0, 0};
+evector va = evec_make(a, 3);
+float l2 = evec_norm(&va);
+
+// matrix operations
+float a[] = {1, 2, 3, 4};
+float b[] = {5, 6, 7, 8};
+float sum[4];
+ematrix A = emat_make(a, 2, 2);
+ematrix B = emat_make(b, 2, 2);
+emat_add(&A, &B, &sum);
+
+// trigonometric functions
+float angle = E_PI / 4;
+float sine = esin(angle);
+float cosine = ecos(angle);
+
+// scalar functions
+float value = 2.0f;
+float absolute = eabs(value);
+float sign = esign(value);
+float square_root = esqrt(value);
+```
