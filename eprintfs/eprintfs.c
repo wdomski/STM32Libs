@@ -15,7 +15,7 @@
 const char *flags = "-+ #0";
 const char *width = "0123456789*";
 
-inline int eabs(int val)
+static inline int eabs(int val)
 {
 	if (val < 0)
 	{
@@ -24,7 +24,7 @@ inline int eabs(int val)
 	return val;
 }
 
-inline float efabs(float val)
+static inline float efabs(float val)
 {
 	if (val < 0.0f)
 	{
@@ -49,6 +49,19 @@ int estrncpy(const char *str, char *out, unsigned int len)
 	assert(str != NULL);
 	assert(out != NULL);
 	for (i = 0; *str != '\0' && i < len; ++str, ++out, ++i)
+	{
+		*out = *str;
+	}
+	*out = '\0';
+	return i;
+}
+
+int estrcpy(const char *str, char *out)
+{
+	unsigned int i;
+	assert(str != NULL);
+	assert(out != NULL);
+	for (i = 0; *str != '\0'; ++str, ++out, ++i)
 	{
 		*out = *str;
 	}
@@ -159,7 +172,8 @@ float eatof(char *str, char **stop)
 	assert(str != NULL);
 	char *local_stop;
 	val = eatoi(str, 10, &local_stop);
-	if(val == 0 && str[0] == '-'){
+	if (val == 0 && str[0] == '-')
+	{
 		small_negative_value = 1;
 	}
 	if (*local_stop == '.')
@@ -330,7 +344,13 @@ int esprintf(char *input_str, const char *format, ...)
 				}
 				else if (format[i] == '*')
 				{
-					// TODO: number is equal to the preceding argument
+					pad_numbers = va_arg(vl, int);
+					if (pad_with_zeros == 0)
+					{
+						pad_with_zeros = 1;
+						pad_character = ' ';
+					}
+					++i;
 				}
 				else
 				{
@@ -356,13 +376,17 @@ int esprintf(char *input_str, const char *format, ...)
 						break;
 					}
 				}
-				else if (format[i] >= '*')
+				else if (format[i] == '*')
 				{
-					// TODO: number is equal to the preceding argument
+					precision_number = va_arg(vl, int);
+					++i;
+					if (i >= len_format)
+					{
+						break;
+					}
 				}
 			}
 
-			// TODO: process length, to check !!!
 			char len_type = 0;
 			if (format[i] == 'l' || format[i] == 'h')
 			{
@@ -378,15 +402,16 @@ int esprintf(char *input_str, const char *format, ...)
 			if (format[i] == 'd' || format[i] == 'i')
 			{
 				long int val; // for lld still long int instead of long long int
-				if(len_type == 0)
+				if (len_type == 0)
 				{
 					val = va_arg(vl, int);
 				}
-				else if(len_type == 1)
+				else if (len_type == 1)
 				{
 					val = va_arg(vl, long int);
 				}
-				else{
+				else
+				{
 					val = va_arg(vl, long long int);
 				}
 				if (pad_with_zeros == 0)
@@ -430,7 +455,7 @@ int esprintf(char *input_str, const char *format, ...)
 				float val = va_arg(vl, double);
 				float fraction = efabs(val) - eabs(val);
 
-				//compensate for negative value when integer part is 0
+				// compensate for negative value when integer part is 0
 				if ((val < 0.0f) && ((long int)val == 0))
 				{
 					*(str++) = '-';
@@ -488,6 +513,14 @@ int esprintf(char *input_str, const char *format, ...)
 				*str++ = val;
 				++len_str;
 			}
+
+			if (format[i] == 's')
+			{
+				char *val = va_arg(vl, char *);
+				estrcpy(val, str);
+				str = move_to_end(str, &local_len);
+				len_str += local_len;
+			}
 		}
 	}
 
@@ -498,12 +531,25 @@ int esprintf(char *input_str, const char *format, ...)
 	return len_str;
 }
 
+static enum eprintfs_length_modifier {
+	length_modifier_none,
+	length_modifier_hh,
+	length_modifier_h,
+	length_modifier_l,
+	length_modifier_ll,
+	length_modifier_j,
+	length_modifier_z,
+	length_modifier_t,
+	length_modifier_L
+} eprintfs_length_modifier;
+
 int esscanf(char *input_str, const char *format, ...)
 {
 	char *str = input_str;
 	int len_format = estrlen(format);
 	char parameters_number = 0;
 	char *output;
+	enum eprintfs_length_modifier length_modifier = length_modifier_none;
 
 	va_list vl;
 
@@ -532,36 +578,187 @@ int esscanf(char *input_str, const char *format, ...)
 				continue;
 			}
 
-			// TODO: process length
+			// process length
+			length_modifier = length_modifier_none;
 			if (format[i] == 'l' || format[i] == 'h')
 			{
+				if (format[i] == 'l')
+				{
+					length_modifier = length_modifier_l;
+				}
+				else
+				{
+					length_modifier = length_modifier_h;
+				}
 				++i;
 				if (format[i] == 'l' || format[i] == 'h')
 				{
+					if (format[i] == 'l')
+					{
+						length_modifier = length_modifier_ll;
+					}
+					else
+					{
+						length_modifier = length_modifier_hh;
+					}
 					++i;
 				}
 			}
 
 			if (format[i] == 'd' || format[i] == 'i')
 			{
-				int *val = va_arg(vl, int *);
-				*val = eatoi(str, 10, &output);
+				switch (length_modifier)
+				{
+				case length_modifier_none:
+				{
+					int *val = va_arg(vl, int *);
+					*val = eatoi(str, 10, &output);
+					break;
+				}
+				case length_modifier_hh:
+				{
+					char *val = va_arg(vl, char *);
+					*val = eatoi(str, 10, &output);
+					break;
+				}
+				case length_modifier_h:
+				{
+					short int *val = va_arg(vl, short int *);
+					*val = eatoi(str, 10, &output);
+					break;
+				}
+				case length_modifier_l:
+				{
+					long int *val = va_arg(vl, long int *);
+					*val = eatoi(str, 10, &output);
+					break;
+				}
+				case length_modifier_ll:
+				{
+					long long int *val = va_arg(vl, long long int *);
+					*val = eatoi(str, 10, &output);
+					break;
+				}
+				default:
+				{
+					int *val = va_arg(vl, int *);
+					*val = eatoi(str, 10, &output);
+					break;
+				}
+				}
+
 				str = output;
 				++parameters_number;
 			}
 
+			if (format[i] == 'u')
+			{
+				switch (length_modifier)
+				{
+				case length_modifier_none:
+				{
+					unsigned int *val = va_arg(vl, unsigned int *);
+					*val = eatoi(str, 10, &output);
+					break;
+				}
+				case length_modifier_hh:
+				{
+					unsigned char *val = va_arg(vl, unsigned char *);
+					*val = eatoi(str, 10, &output);
+					break;
+				}
+				case length_modifier_h:
+				{
+					unsigned short int *val = va_arg(vl, unsigned short int *);
+					*val = eatoi(str, 10, &output);
+					break;
+				}
+				case length_modifier_l:
+				{
+					unsigned long int *val = va_arg(vl, unsigned long int *);
+					*val = eatoi(str, 10, &output);
+					break;
+				}
+				case length_modifier_ll:
+				{
+					unsigned long long int *val = va_arg(vl, unsigned long long int *);
+					*val = eatoi(str, 10, &output);
+					break;
+				}
+				default:
+				{
+					unsigned int *val = va_arg(vl, unsigned int *);
+					*val = eatoi(str, 10, &output);
+					break;
+				}
+				}
+
+				str = output;
+				++parameters_number;
+			}			
+
 			if (format[i] == 'f')
 			{
-				float *val = va_arg(vl, float *);
-				*val = eatof(str, &output);
+				switch (length_modifier)
+				{
+				case length_modifier_l:
+				{
+					double *val = va_arg(vl, double *);
+					*val = (double)eatof(str, &output);
+					break;
+				}
+				default:
+				{
+					float *val = va_arg(vl, float *);
+					*val = eatof(str, &output);
+					break;
+				}
+				}
 				str = output;
 				++parameters_number;
 			}
 
 			if (format[i] == 'x' || format[i] == 'X')
 			{
-				int *val = va_arg(vl, int *);
-				*val = eatoi(str, 16, &output);
+				switch (length_modifier)
+				{
+				case length_modifier_none:
+				{
+					int *val = va_arg(vl, int *);
+					*val = eatoi(str, 16, &output);
+					break;
+				}
+				case length_modifier_hh:
+				{
+					unsigned char *val = va_arg(vl, unsigned char *);
+					*val = eatoi(str, 16, &output);
+					break;
+				}
+				case length_modifier_h:
+				{
+					unsigned short int *val = va_arg(vl, unsigned short int *);
+					*val = eatoi(str, 16, &output);
+					break;
+				}
+				case length_modifier_l:
+				{
+					unsigned long int *val = va_arg(vl, unsigned long int *);
+					*val = eatoi(str, 16, &output);
+					break;
+				}
+				case length_modifier_ll:
+				{
+					unsigned long long int *val = va_arg(vl, unsigned long long int *);
+					*val = eatoi(str, 16, &output);
+					break;
+				}
+				default:
+				{
+					int *val = va_arg(vl, int *);
+					*val = eatoi(str, 16, &output);
+					break;
+				}
+				}
 				str = output;
 				++parameters_number;
 			}
@@ -601,6 +798,28 @@ const char *estrchr(const char *str, int character)
 	return ptr;
 }
 
+const char *estrnchr(const char *str, int character, int n)
+{
+	char ch = character & 0xFF;
+	const char *ptr = NULL;
+	int i = 0;
+	for (; *str != '\0';)
+	{
+		if (*str == ch)
+		{
+			++i;
+		}
+		if (i == n)
+		{
+			ptr = str;
+			break;
+		}
+		++str;
+	}
+
+	return ptr;
+}
+
 char *estrstr(char *str1, const char *str2)
 {
 	char *match = NULL;
@@ -617,7 +836,7 @@ char *estrstr(char *str1, const char *str2)
 			{
 				return NULL;
 			}
-			
+
 			if (str1[i + j] != str2[j])
 			{
 				break;
@@ -628,10 +847,14 @@ char *estrstr(char *str1, const char *str2)
 	return match;
 }
 
-char *efind_char_right(char *str, int len, const char sign, int * position){
-	for(int i = len-1; i >= 0; --i){
-		if(str[i] == sign){
-			if(position){
+char *efind_char_right(char *str, int len, const char sign, int *position)
+{
+	for (int i = len - 1; i >= 0; --i)
+	{
+		if (str[i] == sign)
+		{
+			if (position)
+			{
 				*position = i;
 			}
 			return &str[i];
