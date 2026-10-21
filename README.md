@@ -175,7 +175,7 @@ and interrupts.
 Add `fifo/fifo.c` and `fifo/fifo_hw_rp2040.c` to the target, and add
 `fifo/` to the include path.
 
-## Use
+### Example
 
 ```c
 #include "fifo/fifo.h"
@@ -202,3 +202,9 @@ bool queue_pop(uint32_t *value)
 `fifo_try_add()` returns `false` when full. `fifo_try_remove()` and
 `fifo_try_peek()` return `false` when empty; neither changes the output value
 in that case.
+
+## aproto
+
+ASCII protocol library EMEA-like protocol implementation. It provides functions for encoding and decoding messages according to the EMEA protocol specification.
+
+Details about the EMEA protocol and usage examples can be found in the [aproto README](aproto/README.md) file.
