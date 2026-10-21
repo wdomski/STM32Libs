@@ -164,3 +164,41 @@ float absolute = eabs(value);
 float sign = esign(value);
 float square_root = esqrt(value);
 ```
+
+## fifo
+
+Fixed-capacity, nonblocking FIFO for fixed-size elements. Storage is supplied
+by the caller and must remain valid for the FIFO lifetime. The RP2040/RP2350
+implementation uses hardware spinlocks, so operations are safe across cores
+and interrupts.
+
+Add `fifo/fifo.c` and `fifo/fifo_hw_rp2040.c` to the target, and add
+`fifo/` to the include path.
+
+## Use
+
+```c
+#include "fifo/fifo.h"
+
+static fifo_t queue;
+static uint32_t storage[8];
+
+void queue_init(void)
+{
+    fifo_init(&queue, sizeof(storage[0]), 8u, storage);
+}
+
+bool queue_push(uint32_t value)
+{
+    return fifo_try_add(&queue, &value);
+}
+
+bool queue_pop(uint32_t *value)
+{
+    return fifo_try_remove(&queue, value);
+}
+```
+
+`fifo_try_add()` returns `false` when full. `fifo_try_remove()` and
+`fifo_try_peek()` return `false` when empty; neither changes the output value
+in that case.
